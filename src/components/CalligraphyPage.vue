@@ -29,11 +29,20 @@ const poemLines = computed((): LineInfo[] => {
   if (!currentPoem.value) return []
   const lines = currentPoem.value.contents.split('\n').filter(line => line.length > 0)
   let idx = 0
-  return lines.map(line => {
-    const result = { chars: line.split(''), startIndex: idx }
-    idx += line.length
-    return result
-  })
+  const result: LineInfo[] = []
+  for (const line of lines) {
+    // 按标点符号分割成半句，保留标点
+    const regex = /[^，。！？]+[，。！？]?/g
+    let match
+    while ((match = regex.exec(line)) !== null) {
+      const part = match[0]
+      if (part.trim()) {
+        result.push({ chars: part.split(''), startIndex: idx })
+        idx += part.length
+      }
+    }
+  }
+  return result
 })
 
 const allChars = computed(() => poemLines.value.flatMap(line => line.chars))
